@@ -12,6 +12,8 @@ from sqlalchemy import create_engine
 import sqlalchemy as sqlal
 import psycopg2
 import numpy as np
+import geopandas as gpd
+import plotly.express as px
 #Nos conectamos a la base de datos y solicitamos los datos para el mapa cloropethico
 env_path='env\\app.env'
 # load env 
@@ -28,6 +30,54 @@ dbConnection=engine.connect();
 print("conexion a db ok!")
 #Hacemos la consulta
 datos_dep=pd.read_sql("SELECT * FROM datos_departamento", dbConnection)#Este es el dataframe con los datos para la visualizacion del mapa
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------La función para hacer el mapa-------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------
+#Importamos las coordenadas de las fronteras de los departamentos
+departamentos=gpd.read_file("departamentos_colombi.txt")
+departamentos=departamentos[["DPTO","NOMBRE_DPT","geometry"]]
+departamentos.DPTO=departamentos.DPTO.astype('int')
+#Unimos los dataframes de las coordenadas del departamento con el de los resultados icfes
+datos_dep.rename(columns={'codigo_departamento':'DPTO'},inplace=True)
+datos_dep=datos_dep.dropna()
+datos_dep['DPTO']=datos_dep['DPTO'].astype('int')
+df_merged = departamentos.merge(datos_dep, left_on=['DPTO'], right_on=['DPTO'])
+#Ahora si la funcion
+def colombian_map(df,periodo,opcion):
+    if opcion==1:#se grafica la media
+        hover=['puntaje_ingles','puntaje_mate', 'puntaje_soc', 'puntaje_nat','puntaje_lec']
+        labels_1={'NOMBRE_DPT':"Departamento",'puntaje_mate':'puntaje matematicas','puntaje_soc':'puntaje c.sociales',
+                               'puntaje_nat':'puntaje c.naturales','puntaje_lec':'puntaje lectura'}
+    elif opcion==2:#Se grafica el maximo puntaje
+        hover=['max_p_ingles','max_p_mate','max_p_soc','max_p_nat','max_p_lec''max_p_global']
+        labels_1={'NOMBRE_DPT':"Departamento",'max_p_ingles':'Máximo puntaje en ingles','max_p_soc':'Máximo puntaje c.sociales',
+                               'max_p_nat':'Máximo puntaje c.naturales','max_p_lec':'Maximo puntaje letura','max_p_global':'Máximo puntaje global',
+                               'max_p_mate':'Máximo puntaje matematicas'}
+    elif opcion==3:
+        hover=['min_p_ingles','min_p_mate','min_p_soc','min_p_nat','min_p_lec''min_p_global']
+        labels_1={'NOMBRE_DPT':"Departamento",'min_p_ingles':'Minimo puntaje en ingles','min_p_soc':'Minimo puntaje c.sociales',
+                               'min_p_nat':'Minimo puntaje c.naturales','min_p_lec':'Minimo puntaje letura','min_p_global':'Máximo puntaje global',
+                               'min_p_mate':'Máximo puntaje matematicas'}
+    df_mod=df[df['periodo']==periodo]
+    df_mod=df_mod.set_index("NOMBRE_DPT")
+    fig = px.choropleth(df_mod, geojson=df_mod.geometry, 
+                    locations=df_mod.index, color="puntaje_global",
+                    height=800,
+                   color_continuous_scale="Jet",
+                        labels=labels_1,
+                        
+                   hover_data =hover)
+    fig.update_geos(fitbounds="locations", visible=True)
+    fig.update_layout(
+        title_text='Resultados de pruebas saber 11 periodo '+str(periodo)
+    )
+    fig.update(layout = dict(title=dict(x=0.5)))
+    fig.update_layout(
+        margin={"r":0,"t":30,"l":10,"b":10},
+        coloraxis_colorbar={
+            'title':"""Promedio del puntaje global"""})
+    return fig
+
 
 #Los periodos disponibles
 periodos = {9:'20194',0:'20142',1:'20151',4:'20162',6:'20172',10:'20201',12:'20224',5:'20171',11:'20211',7:'20181',3:'20161',2:'20152',8:'20191'}     
@@ -59,9 +109,9 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         html.Label("Seleccione un estadistico a visualizar",style={'font-size':'70','font-family': 'cursive'}),
         html.Br(style={"line-height": "30"}),
         dcc.Dropdown(['Promedio', 'Minimo', 'Maximo'], 'Promedio', id='dropdown-estadistico',style={'font-size':'70','font-family': 'cursive'}),
-        html.Br(style={"line-height": "30"})
+        html.Br(style={"line-height": "30"}),
         #A continuacion va el mapa:
-        
+        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '65vh'})
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
 
