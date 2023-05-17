@@ -7,12 +7,27 @@ from dash import html
 import pandas as pd
 import geopandas as gpd
 import plotly.express as px
-
-
-
-
-
-
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+import sqlalchemy as sqlal
+import psycopg2
+import numpy as np
+#Nos conectamos a la base de datos y solicitamos los datos para el mapa cloropethico
+env_path='env\\app.env'
+# load env 
+load_dotenv(dotenv_path=env_path)
+# extract env variables
+USER=os.environ.get('USUARIO')
+PASSWORD=os.getenv('CLAVE')
+HOST=os.getenv('HOST')
+PORT=os.getenv('PORT')
+DBNAME=os.getenv('DBNAME')
+#Creamos la conexion
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(USER, PASSWORD, HOST, PORT, DBNAME))
+dbConnection=engine.connect();
+print("conexion a db ok!")
+#Hacemos la consulta
+datos_dep=pd.read_sql("SELECT * FROM datos_departamento", dbConnection)#Este es el dataframe con los datos para la visualizacion del mapa
 
 #Los periodos disponibles
 periodos = {9:'20194',0:'20142',1:'20151',4:'20162',6:'20172',10:'20201',12:'20224',5:'20171',11:'20211',7:'20181',3:'20161',2:'20152',8:'20191'}     
@@ -48,12 +63,24 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         #A continuacion va el mapa:
         
     ],
-    style={'width': '50%', 'display': 'inline-block','verticalAlign': 'top'}
+    style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
 
     ),
+    #Ubicamos un DIV para separar las dos secciones del tablero
     html.Div(#Este div lo usamos para ubicar las listas desplegables del modelo de prediccion y la salida del mismo
-    children=[],
-    style={'width': '50%', 'display': 'inline-block','verticalAlign': 'top'}
+    children=[
+        #NO UBICAR NADA AQUI, ES SOLO PARA DEJAR ESPACIO ENTRE EL LADO DERECHOY EL IZQUIERDO DEL TABLERO
+    ],
+    style={'width': '5%', 'display': 'inline-block','verticalAlign': 'top'}),
+
+
+
+
+    html.Div(#Este div lo usamos para ubicar las listas desplegables del modelo de prediccion y la salida del mismo
+    children=[
+        
+    ],
+    style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
     )
 ])
 
