@@ -75,15 +75,73 @@ condicionCuartosHogar = ~(datosLimpios["fami_cuartoshogar"].apply(lambda x: isin
                            (datosLimpios["fami_cuartoshogar"] >= 1) & 
                            (datosLimpios["fami_cuartoshogar"] <= 11))
 datosLimpios = datosLimpios.drop(datosLimpios[condicionCuartosHogar].index)
+print(len(datosLimpios))
 #Verificacion
 print("fami_cuartoshogar")
 for i in datosLimpios["fami_cuartoshogar"].unique():
+    print(i)
+
+#Los booleanos consumen menos memoria
+datosLimpios.loc["Si"==datosLimpios["fami_tieneautomovil"],"fami_tieneautomovil"]=True
+datosLimpios.loc["No"==datosLimpios["fami_tieneautomovil"],"fami_tieneautomovil"]=False
+#No se sabe si hay mas datos raros en el arvhivo grande
+datosLimpios["fami_tieneautomovil"] = datosLimpios["fami_tieneautomovil"].astype("bool")
+condicionTieneAutomovil = ~(datosLimpios["fami_tieneautomovil"].apply(lambda x: isinstance(x, bool)))
+datosLimpios = datosLimpios.drop(datosLimpios[condicionTieneAutomovil].index)
+print(len(datosLimpios))
+#Verificacion
+print("fami_tieneautomovil")
+for i in datosLimpios["fami_tieneautomovil"].unique():
+    print(i)
+
+#Los booleanos consumen menos memoria
+datosLimpios.loc["Si"==datosLimpios["fami_tienecomputador"],"fami_tienecomputador"]=True
+datosLimpios.loc["No"==datosLimpios["fami_tienecomputador"],"fami_tienecomputador"]=False
+#No se sabe si hay mas datos raros en el arvhivo grande
+datosLimpios["fami_tienecomputador"] = datosLimpios["fami_tienecomputador"].astype("bool")
+condicionTieneAutomovil = ~(datosLimpios["fami_tienecomputador"].apply(lambda x: isinstance(x, bool)))
+datosLimpios = datosLimpios.drop(datosLimpios[condicionTieneAutomovil].index)
+print(len(datosLimpios))
+#Verificacion
+print("fami_tienecomputador")
+for i in datosLimpios["fami_tienecomputador"].unique():
+    print(i)
+
+
+for i in datosLimpios.columns:
+    print(i)
+    print(datosLimpios[i].unique())
+#Los booleanos consumen menos memoria
+datosLimpios.loc["Si"==datosLimpios["fami_tienecomputador"],"fami_tienecomputador"]=True
+datosLimpios.loc["No"==datosLimpios["fami_tienecomputador"],"fami_tienecomputador"]=False
+#No se sabe si hay mas datos raros en el arvhivo grande
+datosLimpios["fami_tienecomputador"] = datosLimpios["fami_tienecomputador"].astype("bool")
+condicionTieneAutomovil = ~(datosLimpios["fami_tienecomputador"].apply(lambda x: isinstance(x, bool)))
+datosLimpios = datosLimpios.drop(datosLimpios[condicionTieneAutomovil].index)
+print(len(datosLimpios))
+#Verificacion
+print("fami_tienecomputador")
+for i in datosLimpios["fami_tienecomputador"].unique():
+    print(i)
+
+
+#Los booleanos consumen menos memoria
+datosLimpios.loc["Si"==datosLimpios["fami_tieneinternet"],"fami_tieneinternet"]=True
+datosLimpios.loc["No"==datosLimpios["fami_tieneinternet"],"fami_tieneinternet"]=False
+#No se sabe si hay mas datos raros en el arvhivo grande
+datosLimpios["fami_tieneinternet"] = datosLimpios["fami_tieneinternet"].astype("bool")
+condicionTieneAutomovil = ~(datosLimpios["fami_tieneinternet"].apply(lambda x: isinstance(x, bool)))
+datosLimpios = datosLimpios.drop(datosLimpios[condicionTieneAutomovil].index)
+print(len(datosLimpios))
+#Verificacion
+print("fami_tieneinternet")
+for i in datosLimpios["fami_tieneinternet"].unique():
     print(i)
 
 for i in datosLimpios.columns:
     print(i)
     print(datosLimpios[i].unique())
 
-datosLimpios.loc["Si"==datosLimpios["fami_tieneautomovil"],"fami_tieneautomovil"]=True
-datosLimpios.loc["No"==datosLimpios["fami_tieneautomovil"],"fami_tieneautomovil"]=False
-datosLimpios["fami_tieneautomovil"] = datosLimpios["fami_tieneautomovil"].astype("bool")
+#for i in datosLimpios.columns:
+#    print(i)
+#    print(datosLimpios[i].dtypes)
