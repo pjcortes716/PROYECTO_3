@@ -145,3 +145,26 @@ for i in datosLimpios.columns:
 #for i in datosLimpios.columns:
 #    print(i)
 #    print(datosLimpios[i].dtypes)
+#Dejar solo las variables de interes
+datosLimpios=datosLimpios.drop(["punt_ingles","punt_matematicas","punt_sociales_ciudadanas","punt_c_naturales","punt_lectura_critica"], axis=1)
+#Modelo
+
+print(datosLimpios.columns)
+
+Y=datosLimpios.loc[:, datosLimpios.columns == "punt_global"]
+X=datosLimpios.loc[:, datosLimpios.columns != "punt_global"]
+print(Y)
+print(X)
+seed = 3
+X_train, X_validation, Y_train, Y_validation = \
+train_test_split(X, Y, test_size=0.2, random_state=seed)
+kfold = KFold(n_splits=3, random_state=seed)
+#'n_estimators':[100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 650, 700, 750, 800, 850, 900, 950, 
+#            1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500,
+#            8000, 8500, 9000, 9500, 10000]
+param_grid={'n_estimators':[100, 150, 200],
+            'max_depth':[5,10,15,20]}
+model = RandomForestRegressor()
+grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring="r2", \
+cv=kfold)
+grid_result = grid.fit(X_train, Y_train)
