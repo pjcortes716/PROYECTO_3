@@ -60,10 +60,11 @@ def colombian_map(df,periodo,opcion):
         labels_1={'NOMBRE_DPT':"Departamento",'min_p_ingles':'Minimo puntaje en ingles','min_p_soc':'Minimo puntaje c.sociales',
                                'min_p_nat':'Minimo puntaje c.naturales','min_p_lec':'Minimo puntaje letura','min_p_global':'Minimo puntaje global',
                                'min_p_mate':'Minimo puntaje matematicas'}
+    dict_graph={1:'puntaje_global',2:'max_p_global',3:'min_p_global'}
     df_mod=df[df['periodo']==periodo]
     df_mod=df_mod.set_index("NOMBRE_DPT")
     fig = px.choropleth(df_mod, geojson=df_mod.geometry, 
-                    locations=df_mod.index, color="puntaje_global",
+                    locations=df_mod.index, color=dict_graph[opcion],
                     height=800,
                    color_continuous_scale="Jet",
                         labels=labels_1,
