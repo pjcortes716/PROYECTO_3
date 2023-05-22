@@ -138,6 +138,72 @@ print("fami_tieneinternet")
 for i in datosLimpios["fami_tieneinternet"].unique():
     print(i)
 
+
+#Dummies
+#Ubicacion
+dummiesUbicacion=pd.get_dummies(datosLimpios["ubicacion"])
+datosLimpios["RURAL"]=dummiesUbicacion["RURAL"]
+datosLimpios["URBANO"]=dummiesUbicacion["URBANO"]
+datosLimpios=datosLimpios.drop(["ubicacion"], axis=1)
+#Bilingue
+dummiesBilingue=pd.get_dummies(datosLimpios["cole_bilingue"])
+datosLimpios["No_Bilingue"]=dummiesBilingue["N"]
+datosLimpios["Si_Bilingue"]=dummiesBilingue["S"]
+datosLimpios=datosLimpios.drop(["cole_bilingue"], axis=1)
+#Calendario
+dummiesCalendario=pd.get_dummies(datosLimpios["cole_calendario"])
+for i in dummiesCalendario.columns:
+    datosLimpios["Calendario "+i]=dummiesCalendario[i]
+datosLimpios=datosLimpios.drop(["cole_calendario"], axis=1)
+#Caracter
+dummiesCaracter=pd.get_dummies(datosLimpios["cole_caracter"])
+for i in dummiesCaracter.columns:
+    datosLimpios["Caracter "+i]=dummiesCaracter[i]
+datosLimpios=datosLimpios.drop(["cole_caracter"], axis=1)
+
+#Ubicacion
+dummiesDepartamento=pd.get_dummies(datosLimpios["cole_depto_ubicacion"])
+for i in dummiesDepartamento.columns:
+    datosLimpios["Departamento " + i]=dummiesDepartamento[i]
+datosLimpios=datosLimpios.drop(["cole_depto_ubicacion"], axis=1)
+#Colegio Genero
+dummiesColegioGenero=pd.get_dummies(datosLimpios["cole_genero"])
+for i in dummiesColegioGenero.columns:
+    datosLimpios["Colegio Genero "+ i]=dummiesColegioGenero[i]
+datosLimpios=datosLimpios.drop(["cole_genero"], axis=1)
+#Jornada
+dummiesJornada=pd.get_dummies(datosLimpios["cole_jornada"])
+for i in dummiesJornada.columns:
+    datosLimpios["Jornada "+i]=dummiesJornada[i]
+datosLimpios=datosLimpios.drop(["cole_jornada"], axis=1)
+
+
+#Naturaleza
+dummiesColegioNaturaleza=pd.get_dummies(datosLimpios["cole_naturaleza"])
+for i in dummiesColegioNaturaleza.columns:
+    datosLimpios["Naturaleza "+i]=dummiesColegioNaturaleza[i]
+datosLimpios=datosLimpios.drop(["cole_naturaleza"], axis=1)
+#Educacion Madre
+dummiesEducacionMadre=pd.get_dummies(datosLimpios["fami_educacionmadre"])
+for i in dummiesEducacionMadre.columns:
+    datosLimpios["Educacion Madre "+i]=dummiesEducacionMadre[i]
+datosLimpios=datosLimpios.drop(["fami_educacionmadre"], axis=1)
+#Educacion Padre
+dummiesEducacionPadre=pd.get_dummies(datosLimpios["fami_educacionpadre"])
+for i in dummiesEducacionPadre.columns:
+    datosLimpios["Educacion Padre "+i]=dummiesEducacionPadre[i]
+datosLimpios=datosLimpios.drop(["fami_educacionpadre"], axis=1)
+#Estu Genero
+dummiesGeneroEstudiante=pd.get_dummies(datosLimpios["estu_genero"])
+for i in dummiesGeneroEstudiante.columns:
+    datosLimpios["Genero Estudiante "+i]=dummiesGeneroEstudiante[i]
+datosLimpios=datosLimpios.drop(["estu_genero"], axis=1)
+#Estrato
+dummiesEstrato=pd.get_dummies(datosLimpios["fami_estratovivienda"])
+for i in dummiesEstrato.columns:
+    datosLimpios[i]=dummiesEstrato[i]
+datosLimpios=datosLimpios.drop(["fami_estratovivienda"], axis=1)
+
 for i in datosLimpios.columns:
     print(i)
     print(datosLimpios[i].unique())
@@ -155,16 +221,16 @@ Y=datosLimpios.loc[:, datosLimpios.columns == "punt_global"]
 X=datosLimpios.loc[:, datosLimpios.columns != "punt_global"]
 print(Y)
 print(X)
-seed = 3
-X_train, X_validation, Y_train, Y_validation = \
-train_test_split(X, Y, test_size=0.2, random_state=seed)
-kfold = KFold(n_splits=3, random_state=seed)
+#seed = 3
+#X_train, X_validation, Y_train, Y_validation = \
+#train_test_split(X, Y, test_size=0.2, random_state=seed)
+#kfold = KFold(n_splits=3, random_state=seed)
 #'n_estimators':[100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 650, 700, 750, 800, 850, 900, 950, 
 #            1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500,
 #            8000, 8500, 9000, 9500, 10000]
-param_grid={'n_estimators':[100, 150, 200],
-            'max_depth':[5,10,15,20]}
-model = RandomForestRegressor()
-grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring="r2", \
-cv=kfold)
-grid_result = grid.fit(X_train, Y_train)
+#param_grid={'n_estimators':[100, 150, 200],
+#            'max_depth':[5,10,15,20]}
+#model = RandomForestRegressor()
+#grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring="r2", \
+#cv=kfold)
+#grid_result = grid.fit(X_train, Y_train)
