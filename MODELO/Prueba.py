@@ -213,6 +213,7 @@ for i in datosLimpios.columns:
 #    print(datosLimpios[i].dtypes)
 #Dejar solo las variables de interes
 datosLimpios=datosLimpios.drop(["punt_ingles","punt_matematicas","punt_sociales_ciudadanas","punt_c_naturales","punt_lectura_critica"], axis=1)
+datosLimpios.to_csv("C:/Users/USUARIO/Desktop/UNIANDES 2023-1/Analitica/PROYECTO_3/MODELO/datosLimpios.csv")
 #Modelo
 
 print(datosLimpios.columns)
