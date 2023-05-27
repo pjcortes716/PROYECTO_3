@@ -24,10 +24,9 @@ X_train, X_validation, Y_train, Y_validation = \
 train_test_split(X, Y, test_size=0.2, random_state=seed)
 Y_train = Y_train.values.ravel()
 kfold = KFold(n_splits=3, random_state=seed, shuffle=True,)
-param_grid={'n_estimators':[100, 150, 200],'max_depth':[5,10,15,20]}
-#             250, 300, 350, 400, 450, 500, 550, 650, 700, 750, 800, 850, 900, 950, 
-#            1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500,
-#            8000, 8500, 9000, 9500, 10000],
+param_grid={'n_estimators':[100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 650, 700, 750, 800, 850, 900, 950,
+                            1000],'max_depth':[5,10,15,20,25,30]}
+
             
 model = RandomForestRegressor()
 grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring="r2", \

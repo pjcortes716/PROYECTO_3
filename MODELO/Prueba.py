@@ -220,8 +220,7 @@ print(datosLimpios.columns)
 
 Y=datosLimpios.loc[:, datosLimpios.columns == "punt_global"]
 X=datosLimpios.loc[:, datosLimpios.columns != "punt_global"]
-print(Y)
-print(X)
+
 #seed = 3
 #X_train, X_validation, Y_train, Y_validation = \
 #train_test_split(X, Y, test_size=0.2, random_state=seed)
