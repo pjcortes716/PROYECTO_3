@@ -66,7 +66,7 @@ def colombian_map(df,periodo,opcion):
     fig = px.choropleth(df_mod, geojson=df_mod.geometry, 
                     locations=df_mod.index, color=dict_graph[opcion],
                     height=800,
-                   color_continuous_scale="Jet",
+                   color_continuous_scale='Jet',
                         labels=labels_1,
                         
                    hover_data =hover)
@@ -78,7 +78,10 @@ def colombian_map(df,periodo,opcion):
     fig.update_layout(
         margin={"r":0,"t":30,"l":10,"b":10},
         coloraxis_colorbar={
-            'title':"""{} del puntaje global""".format(dict_drop[opcion])})
+            'title':"""{} del puntaje global""".format(dict_drop[opcion]),
+            'orientation':'h',
+            'len':0.8})
+    #fig.update_traces(colorbar_orientation='h', selector=dict(type='heatmap'))
     return fig
 ####################################################################################################################################################
 #####################################################FIN DE LA FUNCION PARA GENERAR EL MAPA#########################################################
@@ -135,7 +138,72 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
 
     html.Div(#Este div lo usamos para ubicar las listas desplegables del modelo de prediccion y la salida del mismo
     children=[
-        
+        html.Br(style={"line-height": "40"}),
+        #Ubicamos un elemento de texto para indicar la funcion del slider
+        html.Label("Ingrese los datos socio-economicos del estudiante para obtener una predicción del desempeño en las pruebas saber 11",
+        style={'font-size':'70','font-family': 'cursive'}),
+        html.Br(style={"line-height": "30"}),
+        html.Label("Departamento de ubicación",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['CHOCO', 'VAUPES', 'AMAZONAS', 'LA GUAJIRA', 'MAGDALENA', 'VICHADA',
+       'BOLIVAR', 'GUAINIA', 'CAUCA', 'GUAVIARE', 'SAN ANDRES', 'CAQUETA',
+       'CORDOBA', 'CESAR', 'SUCRE', 'PUTUMAYO', 'TOLIMA', 'ARAUCA',
+       'ATLANTICO', 'ANTIOQUIA', 'CASANARE', 'META', 'NARIÑO', 'CALDAS',
+       'HUILA', 'VALLE', 'QUINDIO', 'RISARALDA', 'NORTE SANTANDER',
+       'CUNDINAMARCA', 'BOYACA', 'SANTANDER', 'BOGOTA'], 'BOGOTA', id='drop-departamentos'),
+        html.Label("Jornada del colegio",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['NOCHE','SABATINA','MAÑANA','TARDE','COMPLETA','UNICA'], 'UNICA', id='drop-jornada'),
+        html.Label("Naturaleza del colegio",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['OFICIAL','NO OFICIAL'], 'OFICIAL', id='drop-naturaleza_cole'),
+        html.Label("Genero del colegio",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['MIXTO','MASCULINO','FEMENINO'], 'MIXTO', id='drop-genero_cole'),
+        html.Label("Calendario del colegio",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['A','B','OTRO'], 'A', id='drop-calendario'),
+        html.Label("Colegio bilingüe?",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['Si','No'], 'Si', id='drop-bilingue'),
+        html.Label("Caracter del colegio?",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['Academico','Tecnico','Otro','No aplica','Tecnico/Academico'], 'Tecnico', id='drop-caracter'),
+        html.Label("Ubicacion del colegio",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['RURAL','URBANO'], 'URBANO', id='drop-ubicacion'),
+        html.Label("Numero de personas que conforman el nucleo familiar",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown([1,2,3,4,5,6,7,8,9,10,11,12], '3', id='drop-fami_personas_hogar'),
+        html.Label("Número de habitaciones con que cuenta la vivienda del nucleo familiar",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown([1,2,3,4,5,6,7,8,9,10,11,12], '3', id='drop-fami_cuartos_hogar'),
+        html.Label("Estrato de la vivienda del nucleo familiar",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown([1,2,3,4,5,6], '3', id='drop-estrato'),
+        html.Label("La familia cuenta con computador?",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['Si','No'], 'Si', id='drop-computador'),
+        html.Label("La familia cuenta con vehiculo propio?",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['Si','No'], 'Si', id='drop-vehiculo'),
+        html.Label("La familia cuenta con acceso a internet?",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['Si','No'], 'Si', id='drop-internet'),
+        html.Label("Genero del estudiante",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['M','F'], 'M', id='drop-genero_estu'),
+        html.Label("Mayor nivel educativo del padre del alumno",style={'font-size':'70','font-family': 'cursive'}),
+        dcc.Dropdown(['Secundaria (Bachillerato) completa',
+       'Educación profesional completa',
+                              'No sabe',
+       'Técnica o tecnológica completa',
+ 'Secundaria (Bachillerato) incompleta',
+                  'Primaria incompleta',
+                            'Postgrado',
+                    'Primaria completa',
+                            'No Aplica',
+                              'Ninguno',
+     'Educación profesional incompleta',
+     'Técnica o tecnológica incompleta'], 'Educación profesional completa', id='drop-edu_padre'),
+     html.Label("Mayor nivel educativo de la madre del alumno",style={'font-size':'70','font-family': 'cursive'}),
+     dcc.Dropdown(['Secundaria (Bachillerato) completa',
+       'Educación profesional completa',
+                              'No sabe',
+       'Técnica o tecnológica completa',
+ 'Secundaria (Bachillerato) incompleta',
+                  'Primaria incompleta',
+                            'Postgrado',
+                    'Primaria completa',
+                            'No Aplica',
+                              'Ninguno',
+     'Educación profesional incompleta',
+     'Técnica o tecnológica incompleta'], 'Educación profesional completa', id='drop-edu_madre'),
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
     ),
