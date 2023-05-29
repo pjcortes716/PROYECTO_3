@@ -65,7 +65,7 @@ def colombian_map(df,periodo,opcion):
     df_mod=df_mod.set_index("NOMBRE_DPT")
     fig = px.choropleth(df_mod, geojson=df_mod.geometry, 
                     locations=df_mod.index, color=dict_graph[opcion],
-                    height=800,
+                    height=2000,
                    color_continuous_scale='Jet',
                         labels=labels_1,
                         
@@ -76,11 +76,13 @@ def colombian_map(df,periodo,opcion):
     )
     fig.update(layout = dict(title=dict(x=0.5)))
     fig.update_layout(
-        margin={"r":0,"t":30,"l":10,"b":10},
+        autosize=False,
+        margin={"r":0,"t":0,"l":0,"b":0,'autoexpand':True},
         coloraxis_colorbar={
             'title':"""{} del puntaje global""".format(dict_drop[opcion]),
             'orientation':'h',
-            'len':0.8})
+            'len':0.8},height=2000)
+        
     #fig.update_traces(colorbar_orientation='h', selector=dict(type='heatmap'))
     return fig
 ####################################################################################################################################################
@@ -121,7 +123,8 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         dcc.Dropdown(['Promedio', 'Minimo', 'Maximo'], 'Promedio', id='dropdown-estadistico',style={'font-size':'70','font-family': 'cursive'}),
         html.Br(style={"line-height": "30"}),
         #A continuacion va el mapa:
-        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '65vh'})
+        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '95vh'})
+       
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
 
@@ -180,7 +183,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         dcc.Dropdown(['M','F'], 'M', id='drop-genero_estu'),
         html.Label("Mayor nivel educativo del padre del alumno",style={'font-size':'70','font-family': 'cursive'}),
         dcc.Dropdown(['Secundaria (Bachillerato) completa',
-       'Educación profesional completa',
+        'Educación profesional completa',
                               'No sabe',
        'Técnica o tecnológica completa',
  'Secundaria (Bachillerato) incompleta',
@@ -204,6 +207,17 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
                               'Ninguno',
      'Educación profesional incompleta',
      'Técnica o tecnológica incompleta'], 'Educación profesional completa', id='drop-edu_madre'),
+    html.Br(style={"line-height": "40"}),
+    html.Button('Estimar puntaje global del estudiante', id='calcular', n_clicks=0,style={'font-size': '12px', 
+    'width': '100%', 'display': 'inline-block', 
+    'margin-bottom': '10px', 'margin-right': '5px', 'height':'37px', 'verticalAlign': 'top'}),
+     html.Br(style={"line-height": "40"}),
+     html.Label("El puntaje global estimado que el estudiante obtendrá en las pruebas saber es:",style={'font-size':'70','font-family': 'cursive'}),
+     dcc.Textarea(
+        id='puntaje_estimado',
+        value='',
+        style={'width': '100%', 'height': 30},
+    )
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
     ),
@@ -226,6 +240,163 @@ def update_map(input_value,estadistico):
     opcion=dict_drop[estadistico]
     fig=colombian_map(df_merged,periodo,opcion)
     return fig
+#Definimos algunos diccionarios que nos seran utiles para la estimacion del puntaje global
+dict_si_true={'Si':True,'No':False}
+#Definimos aqui el callback y la funcion que estiman el puntaje global:
+my_list_departments=['AMAZONAS','ANTIOQUIA', 'ARAUCA', 'ATLANTICO', 'BOGOTA', 'BOLIVAR', 'BOYACA', 'CALDAS','CAQUETA','CASANARE','CAUCA','CESAR', 
+'CHOCO', 'CORDOBA', 'CUNDINAMARCA','GUAINIA','GUAVIARE','HUILA','LA GUAJIRA','MAGDALENA','META','NARIÑO', 'NORTE SANTANDER','PUTUMAYO',
+'QUINDIO','RISARALDA', 'SAN ANDRES', 'SANTANDER','SUCRE','TOLIMA', 'VALLE', 'VAUPES', 'VICHADA',]
+my_list_jornadas=['COMPLETA','MAÑANA','NOCHE','SABATINA','TARDE','UNICA']
+  
+          
+           
+           
+        
+        
+@app.callback(
+    Output("puntaje_estimado","value"),
+    Input(component_id='calcular', component_property='n_clicks'),
+    Input(component_id='drop-fami_personas_hogar', component_property='value'),
+    Input(component_id='drop-fami_cuartos_hogar', component_property='value'),
+    Input(component_id='drop-vehiculo', component_property='value'),
+    Input(component_id='drop-computador', component_property='value'),
+    Input(component_id='drop-internet', component_property='value'),
+    Input(component_id='drop-ubicacion', component_property='value'),
+    Input(component_id='drop-bilingue', component_property='value'),
+    Input(component_id='drop-calendario', component_property='value'),
+    Input(component_id='drop-caracter', component_property='value'),
+    Input(component_id='drop-departamentos', component_property='value'),
+    Input(component_id='drop-genero_cole', component_property='value'),
+    Input(component_id='drop-jornada', component_property='value'),
+    Input(component_id='drop-naturaleza_cole', component_property='value'),
+)
+def estimar_puntaje(n_clicks, fami_personas_hogar, fami_cuartos_hogar, fami_tiene_automovil, fami_tiene_pc,fami_tiene_internet,
+ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, genero_colegio, jornada, naturaleza):
+    if n_clicks==0:
+        return "Oprima el boton para realizar un estimado"
+    else:
+
+        lista=[]
+        #Añadimos el numero de personas del hogar:
+        lista.append(int(fami_personas_hogar))
+        #Añadimos el numero de cuartos que tiene el hogar
+        lista.append(int(fami_cuartos_hogar))
+        #Añadimos si la familia tiene auto
+        lista.append(dict_si_true[fami_tiene_automovil])
+        #Añadimos si la familia tiene computador
+        lista.append(dict_si_true[fami_tiene_pc])
+        #Añadimos si la familia tiene internet
+        lista.append(dict_si_true[fami_tiene_internet])
+        #VERIFICA SI EL COLEGIO ES RURAL O URBANO
+        if ubicacion_rural_urbano=='RURAL':
+            lista.append(1)
+            lista.append(0)
+        else:
+            lista.append(0)
+            lista.append(1)
+        #VERIFICA SI EL COLEGIO ES BILINGÜE
+        if bilingue=='Si':
+            lista.append(0)
+            lista.append(1)
+        else:
+            lista.append(1)
+            lista.append(0)
+        #VERIFICA EL CALENDARIO ACADEMICO
+        if calendario=='A':
+            lista.append(1)
+            lista.append(0)
+            lista.append(0)
+        elif calendario=='B':
+            lista.append(0)
+            lista.append(1)
+            lista.append(0)
+        else:
+            lista.append(0)
+            lista.append(0)
+            lista.append(1)
+        #VERIFICAMOS EL CARACTER DEL COLEGIO
+        if caracter_cole=='Academico':
+            lista.append(1)
+            lista.append(0)
+            lista.append(0)
+            lista.append(0)
+            lista.append(0)
+        elif caracter_cole=='Tecnico':
+            lista.append(0)
+            lista.append(1)
+            lista.append(0)
+            lista.append(0)
+            lista.append(0)
+        elif caracter_cole=='Otro':
+            lista.append(0)
+            lista.append(0)
+            lista.append(1)
+            lista.append(0)
+            lista.append(0)
+        elif caracter_cole=='No aplica':
+            lista.append(0)
+            lista.append(0)
+            lista.append(0)
+            lista.append(1)
+            lista.append(0)
+        elif caracter_cole=='Tecnico/Academico':
+            lista.append(0)
+            lista.append(0)
+            lista.append(0)
+            lista.append(0)
+            lista.append(1)
+        #VERIFICAMOS QUE DEPARTAMENTO ES
+        indice_departamento=my_list_departments.index(departamento)
+        my_new_list=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        my_new_list[indice_departamento]=1
+        for element in my_new_list:
+            lista.append(element)
+        #Verificamos el genero del colegio
+        if genero_colegio=='FEMENINO':
+            lista.append(1)
+            lista.append(0)
+            lista.append(0)
+        elif genero_colegio=='MASCULINO':
+            lista.append(0)
+            lista.append(1)
+            lista.append(0)
+        else:
+            lista.append(0)
+            lista.append(0)
+            lista.append(1)
+        #VERIFICAMOS EL TIPO DE JORNADA
+        indice_jornada=my_list_jornadas.index(jornada)
+        my_new_list=[0,0,0,0,0,0]
+        my_new_list[indice_jornada]=1
+        for element in my_new_list:
+            lista.append(element)
+        #VERIFICAMOS LA NATURALEZA DEL COLEGIO
+        if naturaleza=='NO OFICIAL':
+            lista.append(1)
+            lista.append(0)
+        else:
+            lista.append(0)
+            lista.append(1)
+        #VERIFICAMOS LA EDUCACION DE LA MADRE
+        
+
+
+
+
+
+
+        
+
+
+
+
+        return str(lista)
+
+
+
+    return None
+
+
 
 
 if __name__ == '__main__':
