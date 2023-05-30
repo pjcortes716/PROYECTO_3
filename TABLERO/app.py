@@ -4,7 +4,7 @@ import dash
 import dash
 from dash import dcc
 from dash import html
-from dash import Dash, Input, Output
+from dash import Dash, Input, Output, State
 import pandas as pd
 import geopandas as gpd
 import plotly.express as px
@@ -15,7 +15,41 @@ import psycopg2
 import numpy as np
 import geopandas as gpd
 import plotly.express as px
+from pickle import load
 #Nos conectamos a la base de datos y solicitamos los datos para el mapa cloropethico
+featureNames=['fami_personashogar', 'fami_cuartoshogar', 'fami_tieneautomovil', 
+              'fami_tienecomputador', 'fami_tieneinternet', 'RURAL', 'URBANO', 
+              'No_Bilingue', 'Si_Bilingue', 'Calendario A', 'Calendario B', 
+              'Calendario OTRO', 'Caracter ACADÉMICO', 'Caracter TÉCNICO', 
+              'Caracter NO APLICA', 'Caracter TÉCNICO/ACADÉMICO', 'Departamento AMAZONAS', 
+              'Departamento ANTIOQUIA', 'Departamento ARAUCA', 'Departamento ATLANTICO', 
+              'Departamento BOGOTA', 'Departamento BOLIVAR', 'Departamento BOYACA', 
+              'Departamento CALDAS', 'Departamento CAQUETA', 'Departamento CASANARE', 
+              'Departamento CAUCA', 'Departamento CESAR', 'Departamento CHOCO', 'Departamento CORDOBA', 
+              'Departamento CUNDINAMARCA', 'Departamento GUAINIA', 'Departamento GUAVIARE', 
+              'Departamento HUILA', 'Departamento LA GUAJIRA', 'Departamento MAGDALENA', 
+              'Departamento META', 'Departamento NARIÑO', 'Departamento NORTE SANTANDER', 
+              'Departamento PUTUMAYO', 'Departamento QUINDIO', 'Departamento RISARALDA', 
+              'Departamento SAN ANDRES', 'Departamento SANTANDER', 'Departamento SUCRE', 
+              'Departamento TOLIMA', 'Departamento VALLE', 'Departamento VAUPES', 'Departamento VICHADA', 
+              'Colegio Genero FEMENINO', 'Colegio Genero MASCULINO', 'Colegio Genero MIXTO', 
+              'Jornada COMPLETA', 'Jornada MAÑANA', 'Jornada NOCHE', 'Jornada SABATINA', 
+              'Jornada TARDE', 'Jornada UNICA', 'Naturaleza NO OFICIAL', 'Naturaleza OFICIAL', 
+              'Educacion Madre Educación profesional completa', 'Educacion Madre Educación profesional incompleta', 
+              'Educacion Madre Ninguno', 'Educacion Madre No Aplica', 'Educacion Madre No sabe', 
+              'Educacion Madre Postgrado', 'Educacion Madre Primaria completa', 'Educacion Madre Primaria incompleta', 
+              'Educacion Madre Secundaria (Bachillerato) completa', 'Educacion Madre Secundaria (Bachillerato) incompleta', 
+              'Educacion Madre Técnica o tecnológica completa', 'Educacion Madre Técnica o tecnológica incompleta', 
+              'Educacion Padre Educación profesional completa', 'Educacion Padre Educación profesional incompleta', 
+              'Educacion Padre Ninguno', 'Educacion Padre No Aplica', 'Educacion Padre No sabe', 'Educacion Padre Postgrado', 
+              'Educacion Padre Primaria completa', 'Educacion Padre Primaria incompleta', 
+              'Educacion Padre Secundaria (Bachillerato) completa', 'Educacion Padre Secundaria (Bachillerato) incompleta', 
+              'Educacion Padre Técnica o tecnológica completa', 'Educacion Padre Técnica o tecnológica incompleta', 
+              'Genero Estudiante F', 'Genero Estudiante M', 'Estrato 1', 'Estrato 2', 
+              'Estrato 3', 'Estrato 4', 'Estrato 5', 'Estrato 6', 'Sin Estrato']
+pythonPath = os.path.abspath(__file__)
+modelPath=os.path.dirname(pythonPath)
+serializedModelPath=os.path.join(modelPath,"modelo_serializado2.sav")
 env_path='env\\app.env'
 # load env 
 load_dotenv(dotenv_path=env_path)
@@ -263,23 +297,23 @@ my_list_estratos=['1','2','3','4','5','6','Sin Estrato']
 @app.callback(
     Output("puntaje_estimado","value"),
     Input(component_id='calcular', component_property='n_clicks'),
-    Input(component_id='drop-fami_personas_hogar', component_property='value'),
-    Input(component_id='drop-fami_cuartos_hogar', component_property='value'),
-    Input(component_id='drop-vehiculo', component_property='value'),
-    Input(component_id='drop-computador', component_property='value'),
-    Input(component_id='drop-internet', component_property='value'),
-    Input(component_id='drop-ubicacion', component_property='value'),
-    Input(component_id='drop-bilingue', component_property='value'),
-    Input(component_id='drop-calendario', component_property='value'),
-    Input(component_id='drop-caracter', component_property='value'),
-    Input(component_id='drop-departamentos', component_property='value'),
-    Input(component_id='drop-genero_cole', component_property='value'),
-    Input(component_id='drop-jornada', component_property='value'),
-    Input(component_id='drop-naturaleza_cole', component_property='value'),
-    Input(component_id='drop-edu_madre', component_property='value'),
-    Input(component_id='drop-edu_padre', component_property='value'),
-    Input(component_id='drop-genero_estu', component_property='value'),
-    Input(component_id='drop-estrato', component_property='value')
+    State(component_id='drop-fami_personas_hogar', component_property='value'),
+    State(component_id='drop-fami_cuartos_hogar', component_property='value'),
+    State(component_id='drop-vehiculo', component_property='value'),
+    State(component_id='drop-computador', component_property='value'),
+    State(component_id='drop-internet', component_property='value'),
+    State(component_id='drop-ubicacion', component_property='value'),
+    State(component_id='drop-bilingue', component_property='value'),
+    State(component_id='drop-calendario', component_property='value'),
+    State(component_id='drop-caracter', component_property='value'),
+    State(component_id='drop-departamentos', component_property='value'),
+    State(component_id='drop-genero_cole', component_property='value'),
+    State(component_id='drop-jornada', component_property='value'),
+    State(component_id='drop-naturaleza_cole', component_property='value'),
+    State(component_id='drop-edu_madre', component_property='value'),
+    State(component_id='drop-edu_padre', component_property='value'),
+    State(component_id='drop-genero_estu', component_property='value'),
+    State(component_id='drop-estrato', component_property='value')
 )
 def estimar_puntaje(n_clicks, fami_personas_hogar, fami_cuartos_hogar, fami_tiene_automovil, fami_tiene_pc,fami_tiene_internet,
 ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, genero_colegio, jornada, naturaleza, educacion_madre,
@@ -409,23 +443,12 @@ educacion_padre, genero_estudiante, estrato):
         my_new_list[indice_estrato]=1
         for element in my_new_list:
             lista.append(element)
-        
-        
-
-
-
-
-
-
-
-
-
+        model= load(open(serializedModelPath,'rb'))
+        dfPredictions = pd.DataFrame(element, columns=featureNames)
+        predictions=round(model.predict(dfPredictions))
         
 
-
-
-
-        return str(lista)
+        return str(predictions)
 
 
 

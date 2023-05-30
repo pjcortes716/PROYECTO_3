@@ -21,7 +21,7 @@ Y=datosLimpios.loc[:, datosLimpios.columns == "punt_global"]
 print(Y)
 X=datosLimpios.loc[:, datosLimpios.columns != "punt_global"]
 X_train, X_validation, Y_train, Y_validation = \
-train_test_split(X, Y, test_size=0.2, random_state=seed)
+train_test_split(X, Y, test_size=0.5, random_state=seed)
 Y_train = Y_train.values.ravel()
 #kfold = KFold(n_splits=3, random_state=seed, shuffle=True,)
 #param_grid={'n_estimators':[100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 650, 700, 750, 800, 850, 900, 950,
@@ -37,7 +37,7 @@ Y_train = Y_train.values.ravel()
 #print(grid_result.best_params_["max_depth"])
 #print(grid_result.best_params_["n_estimators"])
 
-bestModel=RandomForestRegressor(n_estimators=1000, max_depth=30)
+bestModel=RandomForestRegressor(n_estimators=500, max_depth=15)
 bestModel.fit(X_train, Y_train)
 predictionsTrain = bestModel.predict(X_train)
 print(r2_score(Y_train, predictionsTrain))
@@ -45,5 +45,5 @@ predictionsTest = bestModel.predict(X_validation)
 print(mean_squared_error(Y_validation, predictionsTest))
 print(r2_score(Y_validation, predictionsTest))
 
-filename=os.path.join(modelPath,"modelo_serializado.sav")
+filename=os.path.join(modelPath,"modelo_serializado2.sav")
 dump(bestModel, open(filename, "wb"))

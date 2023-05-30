@@ -12,7 +12,7 @@ import sys
 pythonPath = os.path.abspath(__file__)
 modelPath=os.path.dirname(pythonPath)
 print(modelPath)
-csv_path=os.path.join(modelPath,"set_10000.csv")
+csv_path=os.path.join(modelPath,"raw_data.csv")
 print(csv_path)
 datos=pd.read_csv(csv_path)
 
@@ -162,6 +162,7 @@ for i in dummiesCaracter.columns:
 datosLimpios=datosLimpios.drop(["cole_caracter"], axis=1)
 
 #Ubicacion
+datosLimpios["cole_depto_ubicacion"]=datosLimpios["cole_depto_ubicacion"].replace("BOGOTÁ","BOGOTA")
 dummiesDepartamento=pd.get_dummies(datosLimpios["cole_depto_ubicacion"])
 for i in dummiesDepartamento.columns:
     datosLimpios["Departamento " + i]=dummiesDepartamento[i]
@@ -213,7 +214,7 @@ for i in datosLimpios.columns:
 #    print(datosLimpios[i].dtypes)
 #Dejar solo las variables de interes
 datosLimpios=datosLimpios.drop(["punt_ingles","punt_matematicas","punt_sociales_ciudadanas","punt_c_naturales","punt_lectura_critica"], axis=1)
-datosLimpios.to_csv("C:/Users/USUARIO/Desktop/UNIANDES 2023-1/Analitica/PROYECTO_3/MODELO/datosLimpios.csv")
+datosLimpios.to_csv("C:/Users/USUARIO/Desktop/UNIANDES 2023-1/Analitica/PROYECTO_3/MODELO/datos_limpios.csv", index=False)
 #Modelo
 
 print(datosLimpios.columns)
