@@ -166,7 +166,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         html.Label("Colegio bilingüe?",style={'font-size':'70','font-family': 'cursive'}),
         dcc.Dropdown(['Si','No'], 'Si', id='drop-bilingue'),
         html.Label("Caracter del colegio?",style={'font-size':'70','font-family': 'cursive'}),
-        dcc.Dropdown(['Academico','Tecnico','Otro','No aplica','Tecnico/Academico'], 'Tecnico', id='drop-caracter'),
+        dcc.Dropdown(['Academico','Tecnico','No aplica','Tecnico/Academico'], 'Tecnico', id='drop-caracter'),
         html.Label("Ubicacion del colegio",style={'font-size':'70','font-family': 'cursive'}),
         dcc.Dropdown(['RURAL','URBANO'], 'URBANO', id='drop-ubicacion'),
         html.Label("Numero de personas que conforman el nucleo familiar",style={'font-size':'70','font-family': 'cursive'}),
@@ -174,7 +174,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         html.Label("Número de habitaciones con que cuenta la vivienda del nucleo familiar",style={'font-size':'70','font-family': 'cursive'}),
         dcc.Dropdown([1,2,3,4,5,6,7,8,9,10,11,12], '3', id='drop-fami_cuartos_hogar'),
         html.Label("Estrato de la vivienda del nucleo familiar",style={'font-size':'70','font-family': 'cursive'}),
-        dcc.Dropdown([1,2,3,4,5,6], '3', id='drop-estrato'),
+        dcc.Dropdown(['1','2','3','4','5','6','Sin Estrato'], '3', id='drop-estrato'),
         html.Label("La familia cuenta con computador?",style={'font-size':'70','font-family': 'cursive'}),
         dcc.Dropdown(['Si','No'], 'Si', id='drop-computador'),
         html.Label("La familia cuenta con vehiculo propio?",style={'font-size':'70','font-family': 'cursive'}),
@@ -249,12 +249,12 @@ dict_si_true={'Si':True,'No':False}
 #Definimos aqui el callback y la funcion que estiman el puntaje global:
 my_list_departments=['AMAZONAS','ANTIOQUIA', 'ARAUCA', 'ATLANTICO', 'BOGOTA', 'BOLIVAR', 'BOYACA', 'CALDAS','CAQUETA','CASANARE','CAUCA','CESAR', 
 'CHOCO', 'CORDOBA', 'CUNDINAMARCA','GUAINIA','GUAVIARE','HUILA','LA GUAJIRA','MAGDALENA','META','NARIÑO', 'NORTE SANTANDER','PUTUMAYO',
-'QUINDIO','RISARALDA', 'SAN ANDRES', 'SANTANDER','SUCRE','TOLIMA', 'VALLE', 'VAUPES', 'VICHADA',]
+'QUINDIO','RISARALDA', 'SAN ANDRES', 'SANTANDER','SUCRE','TOLIMA', 'VALLE', 'VAUPES', 'VICHADA']
 my_list_jornadas=['COMPLETA','MAÑANA','NOCHE','SABATINA','TARDE','UNICA']
 my_list_eduacion_padres=['Educación profesional completa',
 'Educación profesional incompleta', 'Ninguno', 'No Aplica', 'No sabe', 'Postgrado', 'Primaria completa', 'Primaria incompleta', 
 'Secundaria (Bachillerato) completa', 'Secundaria (Bachillerato) incompleta', 'Técnica o tecnológica completa', 'Técnica o tecnológica incompleta'] 
-          
+my_list_estratos=['1','2','3','4','5','6','Sin Estrato']     
            
 #DEFINIMOS LA FUNCION QUE ESTIMA EL PUNTAJE OBTENIDO POR UN ALUMNO
 #            
@@ -278,10 +278,12 @@ my_list_eduacion_padres=['Educación profesional completa',
     Input(component_id='drop-naturaleza_cole', component_property='value'),
     Input(component_id='drop-edu_madre', component_property='value'),
     Input(component_id='drop-edu_padre', component_property='value'),
+    Input(component_id='drop-genero_estu', component_property='value'),
+    Input(component_id='drop-estrato', component_property='value')
 )
 def estimar_puntaje(n_clicks, fami_personas_hogar, fami_cuartos_hogar, fami_tiene_automovil, fami_tiene_pc,fami_tiene_internet,
 ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, genero_colegio, jornada, naturaleza, educacion_madre,
-educacion_padre):
+educacion_padre, genero_estudiante, estrato):
     if n_clicks==0:
         return "Oprima el boton para realizar un estimado"
     else:
@@ -330,31 +332,26 @@ educacion_padre):
             lista.append(0)
             lista.append(0)
             lista.append(0)
-            lista.append(0)
+           
         elif caracter_cole=='Tecnico':
             lista.append(0)
             lista.append(1)
             lista.append(0)
             lista.append(0)
-            lista.append(0)
-        elif caracter_cole=='Otro':
-            lista.append(0)
-            lista.append(0)
-            lista.append(1)
-            lista.append(0)
-            lista.append(0)
+          
+       
         elif caracter_cole=='No aplica':
             lista.append(0)
             lista.append(0)
-            lista.append(0)
             lista.append(1)
             lista.append(0)
+            
         elif caracter_cole=='Tecnico/Academico':
             lista.append(0)
             lista.append(0)
             lista.append(0)
-            lista.append(0)
             lista.append(1)
+          
         #VERIFICAMOS QUE DEPARTAMENTO ES
         indice_departamento=my_list_departments.index(departamento)
         my_new_list=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -399,6 +396,23 @@ educacion_padre):
         my_new_list[indice_ed_padre]=1
         for element in my_new_list:
             lista.append(element)
+        #VERIFICAMOS EL GENERO DEL ESTUDIANTE
+        if genero_estudiante=='F':
+            lista.append(1)
+            lista.append(0)
+        else:
+            lista.append(0)
+            lista.append(1)
+        #VERIFICAMOS EL ESTRATO
+        indice_estrato=my_list_estratos.index(estrato)
+        my_new_list=[0,0,0,0,0,0,0]
+        my_new_list[indice_estrato]=1
+        for element in my_new_list:
+            lista.append(element)
+        
+        
+
+
 
 
 
