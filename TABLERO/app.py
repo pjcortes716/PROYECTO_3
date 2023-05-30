@@ -65,23 +65,25 @@ def colombian_map(df,periodo,opcion):
     df_mod=df_mod.set_index("NOMBRE_DPT")
     fig = px.choropleth(df_mod, geojson=df_mod.geometry, 
                     locations=df_mod.index, color=dict_graph[opcion],
-                    height=2000,
+                    
                    color_continuous_scale='Jet',
                         labels=labels_1,
                         
-                   hover_data =hover)
-    fig.update_geos(fitbounds="locations", visible=True)
+                   hover_data =hover,
+                   scope='south america',
+                   height=1000)
+    fig.update_geos(fitbounds="locations", visible=True)#
     fig.update_layout(
         title_text='Resultados de pruebas saber 11 periodo '+str(periodo)
     )
     fig.update(layout = dict(title=dict(x=0.5)))
     fig.update_layout(
-        autosize=False,
-        margin={"r":0,"t":0,"l":0,"b":0,'autoexpand':True},
+        autosize=True,
+        margin={"r":10,"t":10,"l":10,"b":10,'autoexpand':True},
         coloraxis_colorbar={
             'title':"""{} del puntaje global""".format(dict_drop[opcion]),
             'orientation':'h',
-            'len':0.8},height=2000)
+            'len':0.8})
         
     #fig.update_traces(colorbar_orientation='h', selector=dict(type='heatmap'))
     return fig
@@ -123,7 +125,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         dcc.Dropdown(['Promedio', 'Minimo', 'Maximo'], 'Promedio', id='dropdown-estadistico',style={'font-size':'70','font-family': 'cursive'}),
         html.Br(style={"line-height": "30"}),
         #A continuacion va el mapa:
-        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '95vh'})
+        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '140vh'})
        
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
@@ -191,6 +193,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
                             'Postgrado',
                     'Primaria completa',
                             'No Aplica',
+                            'Secundaria (Bachillerato) completa',
                               'Ninguno',
      'Educación profesional incompleta',
      'Técnica o tecnológica incompleta'], 'Educación profesional completa', id='drop-edu_padre'),
@@ -206,6 +209,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
                             'No Aplica',
                               'Ninguno',
      'Educación profesional incompleta',
+     'Secundaria (Bachillerato) completa',
      'Técnica o tecnológica incompleta'], 'Educación profesional completa', id='drop-edu_madre'),
     html.Br(style={"line-height": "40"}),
     html.Button('Estimar puntaje global del estudiante', id='calcular', n_clicks=0,style={'font-size': '12px', 
@@ -216,14 +220,14 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
      dcc.Textarea(
         id='puntaje_estimado',
         value='',
-        style={'width': '100%', 'height': 30},
+        style={'width': '100%', 'height': '100%'},
     )
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
     ),
     html.Div(#Este div los usamos para dejar un margen derecho
         children=[],
-        style={'width': '1.5%', 'display': 'inline-block','verticalAlign': 'top'})
+        style={'width': '1.5%','display': 'inline-block','verticalAlign': 'top'})
 ])
 #diccionario de opciones del dropdown
 dict_drop={'Promedio':1,"Maximo":2,'Minimo':3}
@@ -247,10 +251,13 @@ my_list_departments=['AMAZONAS','ANTIOQUIA', 'ARAUCA', 'ATLANTICO', 'BOGOTA', 'B
 'CHOCO', 'CORDOBA', 'CUNDINAMARCA','GUAINIA','GUAVIARE','HUILA','LA GUAJIRA','MAGDALENA','META','NARIÑO', 'NORTE SANTANDER','PUTUMAYO',
 'QUINDIO','RISARALDA', 'SAN ANDRES', 'SANTANDER','SUCRE','TOLIMA', 'VALLE', 'VAUPES', 'VICHADA',]
 my_list_jornadas=['COMPLETA','MAÑANA','NOCHE','SABATINA','TARDE','UNICA']
-  
+my_list_eduacion_padres=['Educación profesional completa',
+'Educación profesional incompleta', 'Ninguno', 'No Aplica', 'No sabe', 'Postgrado', 'Primaria completa', 'Primaria incompleta', 
+'Secundaria (Bachillerato) completa', 'Secundaria (Bachillerato) incompleta', 'Técnica o tecnológica completa', 'Técnica o tecnológica incompleta'] 
           
            
-           
+#DEFINIMOS LA FUNCION QUE ESTIMA EL PUNTAJE OBTENIDO POR UN ALUMNO
+#            
         
         
 @app.callback(
@@ -269,9 +276,12 @@ my_list_jornadas=['COMPLETA','MAÑANA','NOCHE','SABATINA','TARDE','UNICA']
     Input(component_id='drop-genero_cole', component_property='value'),
     Input(component_id='drop-jornada', component_property='value'),
     Input(component_id='drop-naturaleza_cole', component_property='value'),
+    Input(component_id='drop-edu_madre', component_property='value'),
+    Input(component_id='drop-edu_padre', component_property='value'),
 )
 def estimar_puntaje(n_clicks, fami_personas_hogar, fami_cuartos_hogar, fami_tiene_automovil, fami_tiene_pc,fami_tiene_internet,
-ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, genero_colegio, jornada, naturaleza):
+ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, genero_colegio, jornada, naturaleza, educacion_madre,
+educacion_padre):
     if n_clicks==0:
         return "Oprima el boton para realizar un estimado"
     else:
@@ -378,7 +388,18 @@ ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, gener
             lista.append(0)
             lista.append(1)
         #VERIFICAMOS LA EDUCACION DE LA MADRE
-        
+        indice_ed_madre=my_list_eduacion_padres.index(educacion_madre)
+        my_new_list=[0,0,0,0,0,0,0,0,0,0,0,0]
+        my_new_list[indice_ed_madre]=1
+        for element in my_new_list:
+            lista.append(element)
+        #VERIFICAMOS LA EDUCACION DEL PADRE
+        indice_ed_padre=my_list_eduacion_padres.index(educacion_padre)
+        my_new_list=[0,0,0,0,0,0,0,0,0,0,0,0]
+        my_new_list[indice_ed_padre]=1
+        for element in my_new_list:
+            lista.append(element)
+
 
 
 
