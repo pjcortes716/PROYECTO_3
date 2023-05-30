@@ -66,7 +66,7 @@ def colombian_map(df,periodo,opcion):
     fig = px.choropleth(df_mod, geojson=df_mod.geometry, 
                     locations=df_mod.index, color=dict_graph[opcion],
                     
-                   color_continuous_scale='Jet',
+                   color_continuous_scale='Blues',
                         labels=labels_1,
                         
                    hover_data =hover,
@@ -102,7 +102,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
     html.Div(children=[
     html.Div(children=[html.Img(src="assets/icfes.png",style={'width': '60%', 'float': 'left','padding': '5px','display': 'block'})],
     style={'width': '25%', 'display': 'inline-block','verticalAlign': 'top'}),
-    html.Div(children=[html.H1("Resultados ICFES Saber 11 - consolidado", style={'font-size':80,'color': 'blue','font-family': 'cursive','textAlign': 'left',
+    html.Div(children=[html.H1("Resultados ICFES Saber 11 - consolidado", style={'font-size':60,'color': 'blue','font-family': 'cursive','textAlign': 'left',
     'verticalAlign': 'center', 'margin-left': 'auto'})],
     style={'width': '75%', 'display': 'inline-block','verticalAlign': 'top'}),  
         
@@ -125,7 +125,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         dcc.Dropdown(['Promedio', 'Minimo', 'Maximo'], 'Promedio', id='dropdown-estadistico',style={'font-size':'70','font-family': 'cursive'}),
         html.Br(style={"line-height": "30"}),
         #A continuacion va el mapa:
-        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '140vh'})
+        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '139.5vh'})
        
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
