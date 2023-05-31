@@ -447,10 +447,10 @@ educacion_padre, genero_estudiante, estrato):
             lista.append(element)
         x=np.reshape(lista,(1,93))
         dfPredictions = pd.DataFrame(x, columns=featureNames)
-        predictions=round(model.predict(dfPredictions))
+        predictions=np.round(model.predict(dfPredictions))
         
 
-        return str(lista)
+        return str(predictions[0])
 
 
 
