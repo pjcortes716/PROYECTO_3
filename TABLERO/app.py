@@ -159,7 +159,7 @@ app.layout = html.Div([#este div es el encabezado del tablero, lo usamos para ub
         dcc.Dropdown(['Promedio', 'Minimo', 'Maximo'], 'Promedio', id='dropdown-estadistico',style={'font-size':'70','font-family': 'cursive'}),
         html.Br(style={"line-height": "30"}),
         #A continuacion va el mapa:
-        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '139.5vh'})
+        dcc.Graph(id='mapa',figure=colombian_map(df_merged, 20194, 1),style={'width': '45vw', 'height': '151vh'})
        
     ],
     style={'width': '47.5%', 'display': 'inline-block','verticalAlign': 'top',"border":"1px gray ridge"}
@@ -293,7 +293,7 @@ my_list_estratos=['1','2','3','4','5','6','Sin Estrato']
 #DEFINIMOS LA FUNCION QUE ESTIMA EL PUNTAJE OBTENIDO POR UN ALUMNO
 #            
         
-        
+model= load(open(serializedModelPath,'rb'))        
 @app.callback(
     Output("puntaje_estimado","value"),
     Input(component_id='calcular', component_property='n_clicks'),
@@ -315,6 +315,7 @@ my_list_estratos=['1','2','3','4','5','6','Sin Estrato']
     State(component_id='drop-genero_estu', component_property='value'),
     State(component_id='drop-estrato', component_property='value')
 )
+
 def estimar_puntaje(n_clicks, fami_personas_hogar, fami_cuartos_hogar, fami_tiene_automovil, fami_tiene_pc,fami_tiene_internet,
 ubicacion_rural_urbano, bilingue, calendario, caracter_cole, departamento, genero_colegio, jornada, naturaleza, educacion_madre,
 educacion_padre, genero_estudiante, estrato):
@@ -443,12 +444,12 @@ educacion_padre, genero_estudiante, estrato):
         my_new_list[indice_estrato]=1
         for element in my_new_list:
             lista.append(element)
-        model= load(open(serializedModelPath,'rb'))
-        dfPredictions = pd.DataFrame(element, columns=featureNames)
+        x=np.reshape(lista,(1,93))
+        dfPredictions = pd.DataFrame(x, columns=featureNames)
         predictions=round(model.predict(dfPredictions))
         
 
-        return str(predictions)
+        return str(lista)
 
 
 
